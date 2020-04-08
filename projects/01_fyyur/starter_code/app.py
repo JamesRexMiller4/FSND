@@ -128,7 +128,6 @@ def search_venues():
   today = date.today().strftime("%Y-%m-%d")
   response_data = Venue.query.filter(Venue.name.like('%' + query + '%')).all()
 
-
   response = {
     "count": len(response_data),
     "data": []
@@ -173,9 +172,6 @@ def show_venue(venue_id):
         "start_time": show.__dict__["start_time"]
       }
       upcoming_shows_results.append(show_obj)
-
-  print(past_shows)
-  print(upcoming_shows)
 
   data = venue[0].__dict__
   data["genres"] = json.loads(data["genres"])
@@ -251,8 +247,8 @@ def show_artist(artist_id):
   # TODO: replace with real venue data from the venues table, using venue_id
   today = date.today().strftime("%Y-%m-%d")
   artist = Artist.query.filter_by(id=artist_id).all()
-  # upcoming_shows = 
-  # past_shows = 
+  upcoming_shows = 
+  past_shows = 
   data1={
     "id": 3,
     "name": "Guns N Petals",
