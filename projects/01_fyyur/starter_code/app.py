@@ -140,7 +140,6 @@ def search_venues():
     "data": []
   }
 
-
   for result in filtered_data:
     upcoming_shows = Show.query.filter_by(venue_id=result.__dict__["id"]).filter(Show.start_time > today).all()
     result_obj = {
@@ -239,17 +238,45 @@ def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
-  query = request.form.get('search_term', '').title()
+  query = request.form.get('search_term', '').lower()
   today = date.today().strftime("%Y-%m-%d")
-  response_data = Venue.query.filter(Venue.name.like('%' + query + '%')).all()
+  response_data = Artist.query.all()
+
+  def split(word): 
+    return [char for char in word]  
+
+  filtered_data = []
+
+  for artist in response_data:
+    if len(query) == 1:
+      words = artist.__dict__["name"].split()
+      for word in words:
+        letters = split(word.lower())
+        print(letters)
+        for char in letters: 
+          if char == query:
+            filtered_data.append(artist)
+    elif len(query) > 1:
+      result = artist.__dict__["name"].lower().find(query)
+      if result == -1:
+        continue
+      else: filtered_data.append(artist)
+  filtered_data = set(filtered_data)
+  
+  data = []
+
+  for artist in filtered_data:
+    upcoming_shows = Show.query.filter_by(artist_id=artist.__dict__["id"]).filter(Show.start_time > today).all()
+    artist = {
+      "id": artist.__dict__["id"],
+      "name": artist.__dict__["name"],
+      "num_upcoming_shows": len(upcoming_shows)
+    }
+    data.append(artist)
   
   response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
+    "count": len(filtered_data),
+    "data": data
   }
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
