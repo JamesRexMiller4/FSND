@@ -126,13 +126,22 @@ def venues():
 def search_venues():
   query = request.form.get('search_term', '').title()
   today = date.today().strftime("%Y-%m-%d")
-  response_data = Venue.query.filter(Venue.name.like('%' + query + '%')).all()
+  response_data = Venue.query.all()
+  filtered_data = []
+
+  for venue in response_data:
+    result = venue.__dict__["name"].find(query)
+    if result == -1:
+      continue
+    else: filtered_data.append(venue)
 
   response = {
-    "count": len(response_data),
+    "count": len(filtered_data),
     "data": []
   }
-  for result in response_data:
+
+
+  for result in filtered_data:
     upcoming_shows = Show.query.filter_by(venue_id=result.__dict__["id"]).filter(Show.start_time > today).all()
     result_obj = {
       "id": result.__dict__["id"],
@@ -230,6 +239,10 @@ def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
+  query = request.form.get('search_term', '').title()
+  today = date.today().strftime("%Y-%m-%d")
+  response_data = Venue.query.filter(Venue.name.like('%' + query + '%')).all()
+  
   response={
     "count": 1,
     "data": [{
@@ -299,6 +312,8 @@ def edit_artist(artist_id):
     "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
     "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
   }
+
+  # artist = Artist.query.filter_by(id=artist_id)
   # TODO: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
