@@ -236,10 +236,7 @@ def create_venue_submission():
   if error:
     flash('An error occurred. Venue ' + request.form["name"] + ' could not be listed.')
   else:
-  # on successful db insert, flash success
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
@@ -400,31 +397,14 @@ def edit_artist_submission(artist_id):
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
   form = VenueForm()
-  venue={
-    "id": 1,
-    "name": "The Musical Hop",
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    "address": "1015 Folsom Street",
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "123-123-1234",
-    "website": "https://www.themusicalhop.com",
-    "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    "seeking_talent": True,
-    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
-  }
-  # TODO: populate form with values from venue with ID <venue_id>
+  venue = Venue.query.filter_by(id=venue_id).all()[0]
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
-  # venue record with ID <venue_id> using the new attributes
   error = False
   try:
-    form_data = request.form
-    genres = json.dumps(form_data.getlist("genres"))
+    genres = json.dumps(request.form.getlist("genres"))
 
     venue = Venue.query.filter_by(id=venue_id).all()[0]
     setattr(venue, "name", request.form["name"])
@@ -459,7 +439,7 @@ def create_artist_form():
 def create_artist_submission():
   # TODO: modify data to be the data object returned from db insertion
   error = False
-  genres = json.dumps(form_data.getlist("genres"))
+  genres = json.dumps(request.form.getlist("genres"))
 
   try:
     artist = Artist(name=request.form["name"],\
