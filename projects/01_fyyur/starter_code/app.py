@@ -124,16 +124,29 @@ def venues():
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  query = request.form.get('search_term', '').title()
+  query = request.form.get('search_term', '').lower()
   today = date.today().strftime("%Y-%m-%d")
   response_data = Venue.query.all()
   filtered_data = []
 
+  def split(word): 
+    return [char for char in word] 
+
+  
   for venue in response_data:
-    result = venue.__dict__["name"].find(query)
-    if result == -1:
-      continue
-    else: filtered_data.append(venue)
+    if len(query) == 1:
+      words = venue.__dict__["name"].split()
+      for word in words:
+        letters = split(word.lower())
+        for char in letters: 
+          if char == query:
+            filtered_data.append(venue)
+    elif len(query) > 1:
+      result = venue.__dict__["name"].lower().find(query)
+      if result == -1:
+        continue
+      else: filtered_data.append(venue)
+  filtered_data = set(filtered_data)
 
   response = {
     "count": len(filtered_data),
@@ -252,7 +265,6 @@ def search_artists():
       words = artist.__dict__["name"].split()
       for word in words:
         letters = split(word.lower())
-        print(letters)
         for char in letters: 
           if char == query:
             filtered_data.append(artist)
