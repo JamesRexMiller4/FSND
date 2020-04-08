@@ -1,3 +1,12 @@
+<style>
+	.delete-btn {
+		background-color: red;
+		color: black;
+		border-radius: 5px;
+	}
+</style>
+
+
 {% extends 'layouts/main.html' %}
 {% block title %}Venue Search{% endblock %}
 {% block content %}
@@ -74,6 +83,28 @@
 		{% endfor %}
 	</div>
 </section>
+<section>
+	<button class='delete-btn' data-id={{venue.id}}>DELETE VENUE</button>
+</section>
+
+<script>
+	const btn = document.querySelector('.delete-btn');
+	btn.onclick = function(e) {
+		const venueId = e.target.dataset['id']
+		fetch('/venues/' + venueId, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		})
+		.then(function(res) {
+			console.log('Venue delete success!')
+		})
+		.catch(function() {
+			console.log('Venue delete error')
+		})
+	}
+</script>
 
 {% endblock %}
 
