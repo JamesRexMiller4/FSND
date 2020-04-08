@@ -36,7 +36,7 @@ class Venue(db.Model):
     city = db.Column(db.String(120), nullable=False)
     state = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120), nullable=False)
-    website = db.Column(db.String(120), nullable=False)
+    website = db.Column(db.String(120), nullable=True)
     facebook_link = db.Column(db.String(120), nullable=True)
     seeking_talent = db.Column(db.Boolean(), default=True)
     seeking_description = db.Column(db.String(120), nullable=True)
@@ -215,9 +215,33 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  error = False
 
+  try:
+    form_data = request.form
+    genres = str(form_data.getlist("genres"))
+    print(str(form_data.getlist("genres")))
+
+    venue = Venue(name=request.form["name"],\
+      genres=genres,\
+      address=request.form["address"],\
+      city=request.form["city"],\
+      state=request.form["state"],\
+      phone=request.form["phone"],\
+      facebook_link=request.form["facebook_link"])
+    print(venue)
+    db.session.add(venue)
+    db.session.commit()
+  except:
+    error = True
+    db.session.rollback()
+  finally:
+    db.session.close()
+  if error:
+    flash('An error occurred. Venue ' + request.form["name"] + ' could not be listed.')
+  else:
   # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
+    flash('Venue ' + request.form['name'] + ' was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
@@ -248,17 +272,14 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-  # search for "band" should return "The Wild Sax Band".
   query = request.form.get('search_term', '').lower()
   today = date.today().strftime("%Y-%m-%d")
   response_data = Artist.query.all()
+  filtered_data = []
 
   def split(word): 
     return [char for char in word]  
 
-  filtered_data = []
 
   for artist in response_data:
     if len(query) == 1:
