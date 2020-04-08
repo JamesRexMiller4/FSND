@@ -381,6 +381,33 @@ def edit_artist(artist_id):
 def edit_artist_submission(artist_id):
   # TODO: take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
+  try:
+    form_data = request.form
+    genres = json.dumps(form_data.getlist("genres"))
+    print(genres)
+
+    artist = Artist.query.filter_by(id=artist_id).all()[0].__dict__
+
+    artist["name"]=request.form["name"]
+    artist["genres"]=genres
+    artist["address"]=request.form["address"]
+    artist["city"]=request.form["city"]
+    artist["state"]=request.form["state"]
+    artist["phone"]=request.form["phone"]
+    artist["facebook_link"]=request.form["facebook_link"]
+    print(artist)
+    db.session.add(artist)
+    db.session.commit()
+  except:
+    error = True
+    db.session.rollback()
+  finally:
+    db.session.close()
+  if error:
+    flash('An error occurred. Artist ' + request.form["name"] + ' could not be updated.')
+  else:
+  # on successful db insert, flash success
+    flash('Artist ' + request.form['name'] + ' was successfully updated!')
 
   return redirect(url_for('show_artist', artist_id=artist_id))
 
@@ -423,9 +450,30 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  error = False
+  form_data = request.form
+  genres = json.dumps(form_data.getlist("genres"))
 
+  try:
+    artist = Artist(name=request.form["name"],\
+      genres=genres,\
+      city=request.form["city"],\
+      state=request.form["state"],\
+      phone=request.form["phone"],\
+      facebook_link=request.form["facebook_link"])
+    print(artist)
+    db.session.add(artist)
+    db.session.commit()
+  except:
+    error = True
+    db.session.rollback()
+  finally:
+    db.session.close()
+  if error:
+    flash('An error occurred. Artist ' + request.form["name"] + ' could not be listed.')
+  else:
   # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
+    flash('Artist ' + request.form['name'] + ' was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
   return render_template('pages/home.html')
