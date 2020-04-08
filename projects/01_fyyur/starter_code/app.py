@@ -132,7 +132,6 @@ def search_venues():
   def split(word): 
     return [char for char in word] 
 
-  
   for venue in response_data:
     if len(query) == 1:
       words = venue.__dict__["name"].split()
@@ -195,7 +194,6 @@ def show_venue(venue_id):
       upcoming_shows_results.append(show_obj)
 
   data = venue[0].__dict__
-  print(type(data["genres"]))
   data["genres"] = json.loads(data["genres"])
   data["past_shows"] = past_shows_results
   data["upcoming_shows"] = upcoming_shows_results
@@ -219,9 +217,7 @@ def create_venue_submission():
   error = False
 
   try:
-    form_data = request.form
-    genres = json.dumps(form_data.getlist("genres"))
-    print(genres)
+    genres = json.dumps(request.form.getlist("genres"))
 
     venue = Venue(name=request.form["name"],\
       genres=genres,\
@@ -230,7 +226,6 @@ def create_venue_submission():
       state=request.form["state"],\
       phone=request.form["phone"],\
       facebook_link=request.form["facebook_link"])
-    print(venue)
     db.session.add(venue)
     db.session.commit()
   except:
@@ -254,7 +249,6 @@ def delete_venue(venue_id):
   error = False
   try:
     venue = Venue.query.filter_by(id=venue_id).all()
-    print(venue)
     Venue.query.filter_by(id=venue_id).delete()
     db.session.commit()
   except:
@@ -293,7 +287,6 @@ def search_artists():
 
   def split(word): 
     return [char for char in word]  
-
 
   for artist in response_data:
     if len(query) == 1:
@@ -379,24 +372,18 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
-  # artist record with ID <artist_id> using the new attributes
+  error = False
   try:
     form_data = request.form
     genres = json.dumps(form_data.getlist("genres"))
-    print(genres)
 
-    artist = Artist.query.filter_by(id=artist_id).all()[0].__dict__
-
-    artist["name"]=request.form["name"]
-    artist["genres"]=genres
-    artist["address"]=request.form["address"]
-    artist["city"]=request.form["city"]
-    artist["state"]=request.form["state"]
-    artist["phone"]=request.form["phone"]
-    artist["facebook_link"]=request.form["facebook_link"]
-    print(artist)
-    db.session.add(artist)
+    artist = Artist.query.filter_by(id=artist_id).all()[0]
+    setattr(artist, "name", request.form["name"])
+    setattr(artist, "genres", genres)
+    setattr(artist, "city", request.form["city"])
+    setattr(artist, "state", request.form["state"])
+    setattr(artist, "phone", request.form["phone"])
+    setattr(artist, "facebook_link", request.form["facebook_link"])
     db.session.commit()
   except:
     error = True
@@ -406,7 +393,6 @@ def edit_artist_submission(artist_id):
   if error:
     flash('An error occurred. Artist ' + request.form["name"] + ' could not be updated.')
   else:
-  # on successful db insert, flash success
     flash('Artist ' + request.form['name'] + ' was successfully updated!')
 
   return redirect(url_for('show_artist', artist_id=artist_id))
@@ -435,6 +421,30 @@ def edit_venue(venue_id):
 def edit_venue_submission(venue_id):
   # TODO: take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
+  error = False
+  try:
+    form_data = request.form
+    genres = json.dumps(form_data.getlist("genres"))
+
+    venue = Venue.query.filter_by(id=venue_id).all()[0]
+    setattr(venue, "name", request.form["name"])
+    setattr(venue, "genres", genres)
+    setattr(venue, "address", request.form["address"])
+    setattr(venue, "city", request.form["city"])
+    setattr(venue, "state", request.form["state"])
+    setattr(venue, "phone", request.form["phone"])
+    setattr(venue, "facebook_link", request.form["facebook_link"])
+    db.session.commit()
+  except:
+    error = True
+    db.session.rollback()
+  finally:
+    db.session.close()
+  if error:
+    flash('An error occurred. Venue ' + request.form["name"] + ' could not be updated.')
+  else:
+    flash('Venue ' + request.form['name'] + ' was successfully updated!')
+
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
