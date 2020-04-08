@@ -195,6 +195,7 @@ def show_venue(venue_id):
       upcoming_shows_results.append(show_obj)
 
   data = venue[0].__dict__
+  print(type(data["genres"]))
   data["genres"] = json.loads(data["genres"])
   data["past_shows"] = past_shows_results
   data["upcoming_shows"] = upcoming_shows_results
@@ -213,14 +214,14 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  # ^^^ do not understand the purpose of this todo 
   error = False
 
   try:
     form_data = request.form
-    genres = str(form_data.getlist("genres"))
-    print(str(form_data.getlist("genres")))
+    genres = json.dumps(form_data.getlist("genres"))
+    print(genres)
 
     venue = Venue(name=request.form["name"],\
       genres=genres,\
@@ -242,7 +243,6 @@ def create_venue_submission():
   else:
   # on successful db insert, flash success
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
